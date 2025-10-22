@@ -1,5 +1,7 @@
 #include "cmsis_wasm_memory.h"
 
+void pthread_exit(void *retval);
+
 typedef struct {
   osThreadFunc_t func;
   void* argument;
