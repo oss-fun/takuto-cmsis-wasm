@@ -43,24 +43,14 @@ static void add_timespec(struct timespec* tmop, uint32_t timeout)
 {
   uint64_t timeout64 = timeout;
   clock_gettime(CLOCK_REALTIME, tmop);
-  tmop->tv_nsec += (timeout64 * TIMESPEC_MSEC * TIMESPEC_MSEC);
-  if (tmop->tv_nsec >= TIMESPEC_NANOSEC) {
-    struct timespec over_tmo;
-    over_tmo.tv_sec = (tmop->tv_nsec / TIMESPEC_NANOSEC);
-    over_tmo.tv_nsec = (over_tmo.tv_sec * TIMESPEC_NANOSEC);
-    tmop->tv_sec += over_tmo.tv_sec;
-    tmop->tv_nsec -= over_tmo.tv_nsec;
+  tmop->tv_sec += (time_t)(timeout64 / TIMESPEC_MSEC);
+  tmop->tv_nsec +=
+      (long)((timeout64 % TIMESPEC_MSEC) * (TIMESPEC_MSEC * TIMESPEC_MSEC));
+  if (tmop->tv_nsec >= (long)TIMESPEC_NANOSEC) {
+    tmop->tv_sec += tmop->tv_nsec / (long)TIMESPEC_NANOSEC;
+    tmop->tv_nsec %= (long)TIMESPEC_NANOSEC;
   }
   return;
-  // uint64_t timeout64 = timeout;
-  // clock_gettime(CLOCK_REALTIME, tmop);
-  // tmop->tv_sec += (time_t)(timeout64 / TIMESPEC_MSEC);
-  // tmop->tv_nsec += (long)((timeout64 % TIMESPEC_MSEC) * (TIMESPEC_MSEC * TIMESPEC_MSEC));
-  // if (tmop->tv_nsec >= (long)TIMESPEC_NANOSEC) {
-  //   tmop->tv_sec += tmop->tv_nsec / (long)TIMESPEC_NANOSEC;
-  //   tmop->tv_nsec %= (long)TIMESPEC_NANOSEC;
-  // }
-  // return;
 }
 
 osStatus_t WasmThreadSyncSleep(uint32_t timeout)
